@@ -15,7 +15,7 @@ class Loan(ABC):
     principal: float
     term: int
     rate: float
-    loan_id: int | None = None
+    loan_id: int
 
     @abstractmethod
     def monthly_payment(self) -> float:

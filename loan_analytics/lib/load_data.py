@@ -52,8 +52,6 @@ def load_loans_from_csv(path: str) -> List[Loan]:
 
     loans: List[Loan] = []
     for item in records:
-        loan = create_loan(item)
-        loan.loan_id = int(item["loan_id"])
-        loans.append(loan)
+        loans.append(create_loan(item))
 
     return loans
