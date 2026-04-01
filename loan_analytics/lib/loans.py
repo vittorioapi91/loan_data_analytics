@@ -23,9 +23,9 @@ class Loan(ABC):
     def monthly_payment(self) -> float:
         """Return the regular monthly payment amount."""
 
-    @abstractmethod
     def amortization_schedule(self) -> List[Dict[str, float]]:
         """Return month-by-month schedule dictionaries."""
+        return self._amortization_schedule_up_to_n(self.term)
 
     @abstractmethod
     def _amortization_schedule_up_to_n(self, upto_month: int) -> List[Dict[str, float]]:
@@ -96,11 +96,6 @@ class FixedRateLoan(Loan):
         denominator = 1 - (1 + monthly_rate) ** (-self.term)
         return numerator / denominator
 
-    def amortization_schedule(self) -> List[Dict[str, float]]:
-        """Return one dict per month: payment, interest, principal, balance."""
-        return self._amortization_schedule_up_to_n(self.term)
-
-
 @dataclass
 class InterestOnlyLoan(Loan):
     """Interest-only loan: pay interest each month, then repay full principal on the last month."""
@@ -143,11 +138,4 @@ class InterestOnlyLoan(Loan):
 
         monthly_rate = self.rate / 12.0
         return self.principal * monthly_rate
-
-    def amortization_schedule(self) -> List[Dict[str, float]]:
-        """Return monthly rows; the last month repays all principal plus interest."""
-        
-        return self._amortization_schedule_up_to_n(self.term)
-
-
 
