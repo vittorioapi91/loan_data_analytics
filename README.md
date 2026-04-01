@@ -10,6 +10,8 @@ Library to calculate loan schedules.
 
 - **`InterestOnlyLoan`** — Interest due each month on the full principal; the **last** month pays that month’s interest plus the full principal in one payment.
 
+The schedule computation uses memoization, so repeated balance lookups reuse the cached schedule instead of recomputing it, keeping the implementation compact.
+
 ## 3. How to run
 
 **Tests** (from the repo root, so imports resolve):

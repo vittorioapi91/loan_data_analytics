@@ -42,7 +42,7 @@ def main() -> None:
     json_output_path = Path(str(output_dir) + '/schedule.json')
     with json_output_path.open("w") as file_handle:
         json.dump(schedules_by_id, file_handle, indent=2)
-    logger.info('file "%s" saved', json_output_path.name)
+    logger.info(f'file {json_output_path.name} saved')
 
     
     csv_output_path = Path(str(output_dir) + '/schedule.csv')

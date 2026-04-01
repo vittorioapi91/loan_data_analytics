@@ -1,9 +1,7 @@
 import unittest
 from pathlib import Path
 
-from pandas.api.types import is_numeric_dtype
-
-from loan_analytics.lib.load_data import validate_loans_csv
+from loan_analytics.lib.load_data import load_loans_from_csv
 from loan_analytics.lib.loans_factory import create_loan
 from loan_analytics.lib.loans import FixedRateLoan, InterestOnlyLoan
 
@@ -68,14 +66,14 @@ class TestFactory(unittest.TestCase):
 
 
 class TestCsvInput(unittest.TestCase):
-    def test_validate_valid_csv(self) -> None:
+    def test_load_valid_csv(self) -> None:
         csv_path = Path(__file__).resolve().parent / "data" / "input" / "loans.csv"
-        df = validate_loans_csv(str(csv_path))
-        self.assertEqual(list(df.columns), ["type", "principal", "term", "rate"])
-        self.assertTrue(df["type"].map(lambda value: isinstance(value, str)).all())
-        self.assertTrue(is_numeric_dtype(df["principal"]))
-        self.assertTrue(is_numeric_dtype(df["term"]))
-        self.assertTrue(is_numeric_dtype(df["rate"]))
+        loans = load_loans_from_csv(str(csv_path))
+        self.assertEqual(len(loans), 2)
+        self.assertIsInstance(loans[0], FixedRateLoan)
+        self.assertIsInstance(loans[1], InterestOnlyLoan)
+        self.assertIsNotNone(loans[0].loan_id)
+        self.assertIsNotNone(loans[1].loan_id)
 
 
 if __name__ == "__main__":

@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from math import isclose
 from typing import Dict, List
 
@@ -16,6 +16,9 @@ class Loan(ABC):
     term: int
     rate: float
     loan_id: int
+    _schedule_cache: List[Dict[str, float]] | None = field(
+        default=None, init=False, repr=False
+    )
 
     @abstractmethod
     def monthly_payment(self) -> float:
@@ -25,9 +28,13 @@ class Loan(ABC):
     def amortization_schedule(self) -> List[Dict[str, float]]:
         """Return month-by-month schedule dictionaries."""
 
-    @abstractmethod
     def balance_at(self, month: int) -> float:
-        """Return balance after ``month`` months (implementation defines valid range)."""
+        """Return balance after ``month`` months; ``ValueError`` if out of range."""
+        if month < 0 or month > self.term:
+            raise ValueError(f"month must be between 0 and {self.term}")
+        if month == 0:
+            return round(self.principal, 2)
+        return self.amortization_schedule()[month - 1]["balance"]
 
 
 @dataclass
@@ -47,6 +54,8 @@ class FixedRateLoan(Loan):
 
     def amortization_schedule(self) -> List[Dict[str, float]]:
         """Return one dict per month: payment, interest, principal, balance."""
+        if self._schedule_cache is not None:
+            return self._schedule_cache
 
         schedule: List[Dict[str, float]] = []
         payment = self.monthly_payment()
@@ -75,17 +84,8 @@ class FixedRateLoan(Loan):
                     "balance": round(balance, 2),
                 }
             )
-        return schedule
-
-    def balance_at(self, month: int) -> float:
-        """Return balance after `month` months; `ValueError` if not in `[0, term]`."""
-
-        if month < 0 or month > self.term:
-            raise ValueError(f"month must be between 0 and {self.term}")
-        if month == 0:
-            return round(self.principal, 2)
-        return self.amortization_schedule()[month - 1]["balance"]
-
+        self._schedule_cache = schedule
+        return self._schedule_cache
 
 @dataclass
 class InterestOnlyLoan(Loan):
@@ -99,6 +99,8 @@ class InterestOnlyLoan(Loan):
 
     def amortization_schedule(self) -> List[Dict[str, float]]:
         """Return monthly rows; the last month repays all principal plus interest."""
+        if self._schedule_cache is not None:
+            return self._schedule_cache
 
         schedule: List[Dict[str, float]] = []
         monthly_interest = self.principal * (self.rate / 12.0)
@@ -122,16 +124,7 @@ class InterestOnlyLoan(Loan):
                     "balance": round(balance, 2),
                 }
             )
-        return schedule
+        self._schedule_cache = schedule
+        return self._schedule_cache
 
-    def balance_at(self, month: int) -> float:
-        """Return outstanding principal after ``month``; zero after payoff; ``ValueError`` if invalid."""
-
-        if month < 0 or month > self.term:
-            raise ValueError(f"month must be between 0 and {self.term}")
-        if month == 0:
-            return round(self.principal, 2)
-        if month < self.term:
-            return round(self.principal, 2)
-        return 0.0
 
