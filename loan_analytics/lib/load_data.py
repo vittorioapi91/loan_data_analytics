@@ -1,23 +1,21 @@
 from __future__ import annotations
 
-import random
-from typing import List
-from pathlib import Path
+from typing import Dict
 import pandas as pd
 
 from .loans_factory import create_loan
 from .loans import Loan
 
 
-
-def load_loans_from_csv(path: str) -> List[Loan]:
-    """Validated and parse CSV."""
+def load_loans_from_csv(path: str) -> Dict[int, Loan]:
+    """Parse CSV."""
 
     df = pd.read_csv(path)
     records = df.to_dict(orient="records")
 
-    loans: List[Loan] = []
+    loans_by_id: Dict[int, Loan] = {}
     for item in records:
-        loans.append(create_loan(item))
+        loan_id = int(item["loan_id"])
+        loans_by_id[loan_id] = create_loan(item)
 
-    return loans
+    return loans_by_id
