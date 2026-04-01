@@ -29,7 +29,3 @@ build/
 dist/
 *.egg-info/
 
-# Project-generated outputs
-outputs/
-input/loans_with_id.csv
-
