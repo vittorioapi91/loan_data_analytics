@@ -62,7 +62,7 @@ class TestFactory(unittest.TestCase):
     def test_reject_unsupported_loan(self) -> None:
         with self.assertRaises(ValueError):
             create_loan({"type": "unknown", "principal": 10000, "term": 12, "rate": 0.1, "loan_id": 12})
-    # TODO: further validation logic could be implemented, on the other arguments
+
 
 
 class TestCsvInput(unittest.TestCase):
