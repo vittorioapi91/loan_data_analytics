@@ -1,3 +1,3 @@
 loan_id,type,principal,term,rate
-973684,fixed_rate,10000,12,0.12
-350260,interest_only,50000,6,0.06
+650464,fixed_rate,10000,12,0.12
+637377,interest_only,50000,6,0.06

@@ -34,11 +34,11 @@ def main() -> None:
 
     # remove any previous output
     for output_type in ['csv', 'json']:
-        try:
-            os.remove(Path(str(output_dir) + f'/schedule.{output_type}'))
-        except OSError:
-            pass
+        output_path = Path(str(output_dir) + f'/schedule.{output_type}')
+        if os.path.exists(output_path):
+            os.remove(output_path)
 
+        
     json_output_path = Path(str(output_dir) + '/schedule.json')
     with json_output_path.open("w") as file_handle:
         json.dump(schedules_by_id, file_handle, indent=2)
