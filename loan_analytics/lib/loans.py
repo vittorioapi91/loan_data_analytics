@@ -27,9 +27,22 @@ class Loan(ABC):
         """Return month-by-month schedule dictionaries."""
         return self._amortization_schedule_up_to_n(self.term)
 
-    @abstractmethod
     def _amortization_schedule_up_to_n(self, upto_month: int) -> List[Dict[str, float]]:
-        """Incrementally extend cached schedule up to ``upto_month``."""
+        """Return cached schedule, extending it up to ``upto_month`` when needed."""
+        if upto_month < 0 or upto_month > self.term:
+            raise ValueError(f"upto_month must be between 0 and {self.term}")
+
+        if self._schedule_cache is None:
+            self._schedule_cache = []
+
+        if len(self._schedule_cache) < upto_month:
+            self._extend_schedule_cache(upto_month)
+
+        return self._schedule_cache
+
+    @abstractmethod
+    def _extend_schedule_cache(self, upto_month: int) -> None:
+        """Append missing schedule rows through ``upto_month``."""
 
     def balance_at(self, month: int) -> float:
         """Return balance after ``month`` months; ``ValueError`` if out of range."""
@@ -45,14 +58,8 @@ class Loan(ABC):
 class FixedRateLoan(Loan):
     """Fully amortizing fixed-rate loan."""
 
-    def _amortization_schedule_up_to_n(self, upto_month: int) -> List[Dict[str, float]]:
-        """Incrementally extend cached schedule up to ``upto_month``."""
-
-        if self._schedule_cache is None:
-            self._schedule_cache = []
-
-        if len(self._schedule_cache) >= upto_month:
-            return self._schedule_cache
+    def _extend_schedule_cache(self, upto_month: int) -> None:
+        """Append fixed-rate rows through ``upto_month``."""
 
         payment = self.monthly_payment()
         monthly_rate = self.rate / 12.0
@@ -83,8 +90,6 @@ class FixedRateLoan(Loan):
                 }
             )
 
-        return self._schedule_cache
-
     def monthly_payment(self) -> float:
         """Return level payment that fully amortizes principal over `term` months."""
 
@@ -100,13 +105,8 @@ class FixedRateLoan(Loan):
 class InterestOnlyLoan(Loan):
     """Interest-only loan: pay interest each month, then repay full principal on the last month."""
 
-    def _amortization_schedule_up_to_n(self, upto_month: int) -> List[Dict[str, float]]:
-        """Incrementally extend cached schedule up to ``upto_month``."""
-        if self._schedule_cache is None:
-            self._schedule_cache = []
-
-        if len(self._schedule_cache) >= upto_month:
-            return self._schedule_cache
+    def _extend_schedule_cache(self, upto_month: int) -> None:
+        """Append interest-only rows through ``upto_month``."""
 
         monthly_interest = self.principal * (self.rate / 12.0)
         start_month = len(self._schedule_cache) + 1
@@ -130,8 +130,6 @@ class InterestOnlyLoan(Loan):
                     "balance": round(balance, 2),
                 }
             )
-
-        return self._schedule_cache
 
     def monthly_payment(self) -> float:
         """Return monthly interest on principal (before the final principal payment)."""
