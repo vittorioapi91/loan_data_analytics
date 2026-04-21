@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from decimal import Decimal
 from typing import Any, Dict
 
 from .loans import FixedRateLoan, InterestOnlyLoan, Loan
@@ -13,9 +14,9 @@ def create_loan(config: Dict[str, Any]) -> Loan:
 
     loan_type = str(config["type"])
 
-    principal = float(config["principal"])
-    term = int(config["term"])
-    rate = float(config["rate"])
+    principal = Decimal(str(config["principal"]))
+    term = Decimal(str(config["term"]))
+    rate = Decimal(str(config["rate"]))
 
     if loan_type == 'fixed_rate':
         return FixedRateLoan(principal=principal, term=term, rate=rate)

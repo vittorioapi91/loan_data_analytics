@@ -1,4 +1,5 @@
 import unittest
+from decimal import Decimal
 from pathlib import Path
 
 from loan_analytics.lib.load_data import load_loans_from_csv
@@ -32,6 +33,10 @@ class TestFixedRateLoan(unittest.TestCase):
         with self.assertRaises(ValueError):
             loan.balance_at(13)
 
+    def test_rejects_rate_list_for_fixed_rate_loan(self) -> None:
+        with self.assertRaises(ValueError):
+            FixedRateLoan(principal=10000, term=12, rate=[0.12, 0.13])
+
 
 class TestInterestOnlyLoan(unittest.TestCase):
     def test_monthly_payment(self) -> None:
@@ -48,12 +53,19 @@ class TestInterestOnlyLoan(unittest.TestCase):
         self.assertEqual(schedule[-1]["principal"], 50000.0)
         self.assertEqual(schedule[-1]["balance"], 0.0)
 
+    def test_rejects_rate_list_for_interest_only_loan(self) -> None:
+        with self.assertRaises(ValueError):
+            InterestOnlyLoan(principal=50000, term=6, rate=[0.05, 0.06])
+
 
 class TestFactory(unittest.TestCase):
 
     def test_create_fixed_rate_loan(self) -> None:
         loan = create_loan({"type": "fixed_rate", "principal": 10000, "term": 12, "rate": 0.1, "loan_id": 10})
         self.assertIsInstance(loan, FixedRateLoan)
+        self.assertIsInstance(loan.principal, Decimal)
+        self.assertIsInstance(loan.term, Decimal)
+        self.assertIsInstance(loan.rate, Decimal)
 
     def test_create_interest_only_loan(self) -> None:
         loan = create_loan({"type": "interest_only", "principal": 10000, "term": 12, "rate": 0.1, "loan_id": 11})
@@ -62,6 +74,18 @@ class TestFactory(unittest.TestCase):
     def test_reject_unsupported_loan(self) -> None:
         with self.assertRaises(ValueError):
             create_loan({"type": "unknown", "principal": 10000, "term": 12, "rate": 0.1, "loan_id": 12})
+
+    def test_reject_negative_principal(self) -> None:
+        with self.assertRaises(ValueError):
+            create_loan({"type": "fixed_rate", "principal": -10000, "term": 12, "rate": 0.1, "loan_id": 13})
+
+    def test_reject_non_positive_term(self) -> None:
+        with self.assertRaises(ValueError):
+            create_loan({"type": "fixed_rate", "principal": 10000, "term": 0, "rate": 0.1, "loan_id": 14})
+
+    def test_reject_negative_rate(self) -> None:
+        with self.assertRaises(ValueError):
+            create_loan({"type": "fixed_rate", "principal": 10000, "term": 12, "rate": -0.1, "loan_id": 15})
 
 
 
