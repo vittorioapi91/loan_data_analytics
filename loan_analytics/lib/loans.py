@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
+from decimal import Decimal
 from math import isclose
 from typing import Dict, List
 
@@ -61,10 +62,12 @@ class FixedRateLoan(Loan):
     def _extend_schedule_cache(self, upto_month: int) -> None:
         """Append fixed-rate rows through ``upto_month``."""
 
-        payment = self.monthly_payment()
-        monthly_rate = self.rate / 12.0
+        payment = Decimal(str(self.monthly_payment()))
+        monthly_rate = Decimal(str(self.rate)) / Decimal("12")
         balance = (
-            self.principal if not self._schedule_cache else self._schedule_cache[-1]["balance"]
+            Decimal(str(self.principal))
+            if not self._schedule_cache
+            else Decimal(str(self._schedule_cache[-1]["balance"]))
         )
         start_month = len(self._schedule_cache) + 1
 
@@ -77,16 +80,14 @@ class FixedRateLoan(Loan):
                 payment = principal_paid + interest
 
             balance = balance - principal_paid
-            if balance < 0 and isclose(balance, 0.0, abs_tol=1e-8):
-                balance = 0.0
 
             self._schedule_cache.append(
                 {
                     "month": month,
-                    "payment": round(payment, 2),
-                    "interest": round(interest, 2),
-                    "principal": round(principal_paid, 2),
-                    "balance": round(balance, 2),
+                    "payment": round(float(payment), 2),
+                    "interest": round(float(interest), 2),
+                    "principal": round(float(principal_paid), 2),
+                    "balance": round(float(balance), 2),
                 }
             )
 
