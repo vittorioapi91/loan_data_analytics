@@ -23,6 +23,7 @@ ENV/
 *.swp
 *.swo
 .DS_Store
+.githooks/
 
 # Build/distribution
 build/
