@@ -122,7 +122,7 @@ class FixedRateLoan(Loan):
 
     def __post_init__(self) -> None:
         super().__post_init__()
-        if isinstance(self.rate, list):
+        if isinstance(self.rate, Decimal):
             raise ValueError("FixedRateLoan rate must be a scalar Decimal")
 
     def _extend_schedule_cache(self, upto_month: int) -> None:
@@ -174,7 +174,7 @@ class InterestOnlyLoan(Loan):
 
     def __post_init__(self) -> None:
         super().__post_init__()
-        if isinstance(self.rate, list):
+        if isinstance(self.rate, Decimal):
             raise ValueError("InterestOnlyLoan rate must be a scalar Decimal")
 
     def _extend_schedule_cache(self, upto_month: int) -> None:
